@@ -4,11 +4,9 @@ from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.db import models
 from django.db.models import Q, signals
 from django.dispatch import receiver
+import uuid;
 from django.utils.translation import gettext_lazy as _
 from tree_queries.models import TreeNode
-
-UserGroup = apps.get_model(getattr(settings, 'CABINET_USER_GROUP_MODEL', 'support.UserGroup'))
-UserProfile = apps.get_model(getattr(settings, 'CABINET_USER_PROFILE_MODEL', 'support.UserProfile'))
 
 from cabinet.base import (
     AbstractFile,
@@ -42,7 +40,7 @@ def get_file_model():
 
 class Folder(TimestampsMixin, TreeNode):
     name = models.CharField(_("name"), max_length=100)
-    user_groups = models.ManyToManyField(UserGroup, blank=True)
+    organisation_id = models.UUIDField(default=uuid.uuid4, editable=False, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -70,7 +68,7 @@ class File(AbstractFile, ImageMixin, DownloadMixin, OverwriteMixin):
     FILE_FIELDS = ["image_file", "download_file"]
 
     caption = models.CharField(_("caption"), max_length=1000, blank=True)
-    uploaded_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    copyright = models.CharField(_("copyright"), max_length=1000, blank=True)
 
     class Meta(AbstractFile.Meta):
         swappable = "CABINET_FILE_MODEL"
